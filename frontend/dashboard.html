@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"> 
+  <title>Voice Auth Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: white;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+    }
+
+    .box {
+      background: rgba(255,255,255,0.12);
+      padding: 40px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      width: 300px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #username {
+      font-size: 22px;
+      margin: 10px 0 20px;
+      color: #ffeb3b;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #ff4d4d;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #e60000;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h1>🎉 Login Successful</h1>
+  <p>Welcome</p>
+  <h2 id="username"></h2>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+  const user = localStorage.getItem("user");
+  // Check login
+  if (!user) {
+    window.location.href = "index.html";
+  } else {
+    document.getElementById("username").innerText = user;
+  }
+  
+  window.onload = () => {
+    launchConfetti();
+}; 
+    function launchConfetti() {
+            const duration = 4 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+
+                const particleCount = 50 * (timeLeft / duration);
+                confetti({ ...defaults, particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } });
+            }, 250);
+        }
+  // Logout function
+  function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "index.html";
+  }
+</script>
+
+</body>
+</html>

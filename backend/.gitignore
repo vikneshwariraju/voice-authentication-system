@@ -1,0 +1,18 @@
+# Virtual Environment
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Audio/temp files
+audio/
+data/
+*.wav
+
+# Model files (optional)
+*.pkl
+
+# OS files
+.DS_Store
