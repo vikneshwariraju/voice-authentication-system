@@ -11,20 +11,28 @@ from audio_utils import extract_mfcc
 
 app = FastAPI()
 
+# ------------------ PATH SETUP ------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DATASET_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(DATASET_DIR, exist_ok=True)
+
+UPLOAD_FOLDER =os.path.join(BASE_DIR, "audio")
+os.makedirs(UPLOAD_FOLDER,exist_ok=True)
+
 # Load model + scaler
 model = None
-scalar = None
-
+scaler = None
 def load_model():
     global model, scaler
-    with open("model.pkl", "rb") as f:
+    with open(os.path.join(BASE_DIR,"model.pkl"), "rb") as f:
         model = pickle.load(f)
-    with open("scaler.pkl", "rb") as f:
+    with open(os.path.join(BASE_DIR, "scaler.pkl"), "rb") as f:
         scaler = pickle.load(f)
 
 #Load once at startup
 load_model()
-
+#-----------Cors----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # allow frontend
@@ -32,17 +40,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-UPLOAD_FOLDER ="audio"
-os.makedirs(UPLOAD_FOLDER,exist_ok=True)
-
+#------------Routes---------------
 @app.get("/")
 def home():
     return {"message": "Backend is running 🚀"}
 
+#------------Register------------
 @app.post("/register/")
 async def register(user: str, file: UploadFile = File(...)):
-    user_folder = os.path.join("data", user)
+    user_folder = os.path.join(DATASET_DIR, user)
     os.makedirs(user_folder, exist_ok=True)
     
     file_path = os.path.join(user_folder, f"{uuid.uuid4()}.wav")
@@ -51,13 +57,19 @@ async def register(user: str, file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     print(f"Saved: {file_path}. Starting Retraining...")
-
-# 1. 🔥 AUTO-TRAIN: This calls your function from train_model.py
+    #---optional Auto retrain -----
+    #train_model()
+    #Load_model()
     return {"message": f"{user} registered✅"} 
 
+#-------------Login-------------
 @app.post("/login/")
 async def login(file: UploadFile = File(...)):
-    temp_path = "temp.wav"
+
+    #safety check
+    if model is None or scaler is None:
+        return {"error": "Model not loaded"}
+    temp_path = os.path.join(BASE_DIR, "temp.wav")
 
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -72,6 +84,9 @@ async def login(file: UploadFile = File(...)):
 
     print("Prediction:", prediction)
     print("Confidence:", confidence)
+
+    # Cleanup temp file
+    os.remove(temp_path)
 
     # Reject logic
     if confidence < 70:
