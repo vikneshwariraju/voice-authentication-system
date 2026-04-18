@@ -11,8 +11,5 @@ audio/
 data/
 *.wav
 
-# Model files (optional)
-*.pkl
-
 # OS files
 .DS_Store
