@@ -152,8 +152,8 @@ async function stopRecording() {
   const username = document.getElementById("username").value;
 
   let url = mode === "register"
-    ? `http://127.0.0.1:8000/register/?user=${username}`
-    : "http://127.0.0.1:8000/login/";
+    ? "https://voice-authentication-system.onrender.com/register/?user=${username}"
+    : "https://voice-authentication-system.onrender.com/login/";
 
   try {
     const res = await fetch(url, {
