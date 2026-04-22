@@ -1,4 +1,4 @@
-# Voice-Based Authentication System🎤
+## Voice-Based Authentication System
 
 Live Demo: https://voice-authentication-system.netlify.app/    
 Backend API Docs: https://voice-authentication-system.onrender.com/docs
@@ -11,22 +11,20 @@ This project is a full-stack voice biometric authentication system that verifies
 
 ---
 
-## Screenshots 📸
+## Demo Video 🎥
 
-### Dashboard
-![Dashboard](assets/dashboard.png)
-
-### Login Page
-![Login](assets/login.png)
-
-### Voice Recording
-![Recording](assets/recording.png)
+<p align="center">
+    <img src="assets/demo.gif" width="600"/>
+</p>
 
 ---
 
-## Demo Video 🎥
+## Screenshots 📸
 
-https://your-video-link.com
+### Preview
+<p align="center">
+<img src="assets/Login.jpg" width="600"/>
+</p>
 
 ---
 
@@ -141,12 +139,6 @@ Open in browser:
 ```
 http://localhost:5500
 ```
-
----
-
-## Demo Video
-
-https://youtube.com/your-video-link
 
 ---
 
