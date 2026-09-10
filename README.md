@@ -28,7 +28,7 @@ This project is a full-stack voice biometric authentication system that verifies
 
 ---
 
-## Features 🚀
+## Features 
 
 * Voice-based user registration and login
 * Real-time audio recording via browser
@@ -40,7 +40,7 @@ This project is a full-stack voice biometric authentication system that verifies
 
 ---
 
-## Tech Stack 🧠
+## Tech Stack 
 
 ### Backend
 
