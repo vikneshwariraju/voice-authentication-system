@@ -145,14 +145,14 @@ async function stopRecording() {
   source.disconnect();
   stream.getTracks().forEach(track => track.stop());
 
-  const blob = encodeWAV(audioData);
+  const blob = encodeWAV(audioData, audioContext.sampleRate);
   const formData = new FormData();
   formData.append("file", blob, "voice.wav");
 
   const username = document.getElementById("username").value;
 
   let url = mode === "register"
-    ? "https://voice-authentication-system.onrender.com/register/?user=${username}"
+    ? `https://voice-authentication-system.onrender.com/register/?user=${encodeURIComponent(username)}`
     : "https://voice-authentication-system.onrender.com/login/";
 
   try {
@@ -203,9 +203,9 @@ function launchConfetti() {
         }
 
 
-function encodeWAV(samples) {
+function encodeWAV(samples, sampleRate) {
   let buffer = flatten(samples);
-  let dataview = createWavFile(buffer);
+  let dataview = createWavFile(buffer, sampleRate);
   return new Blob([dataview], { type: 'audio/wav' });
 }
 
@@ -219,21 +219,29 @@ function flatten(arrays) {
   return result;
 }
 
-function createWavFile(samples) {
+function createWavFile(samples, sampleRate) {
   let buffer = new ArrayBuffer(44 + samples.length * 2);
   let view = new DataView(buffer);
 
   writeString(view, 0, 'RIFF');
   view.setUint32(4, 36 + samples.length * 2, true);
+
   writeString(view, 8, 'WAVE');
   writeString(view, 12, 'fmt ');
+
   view.setUint32(16, 16, true);
   view.setUint16(20, 1, true);
   view.setUint16(22, 1, true);
-  view.setUint32(24, 44100, true);
-  view.setUint32(28, 44100 * 2, true);
+
+  // Actual sample rate
+  view.setUint32(24, sampleRate, true);
+
+  //byte rate
+  view.setUint32(28, sampleRate, true);
+
   view.setUint16(32, 2, true);
   view.setUint16(34, 16, true);
+  
   writeString(view, 36, 'data');
   view.setUint32(40, samples.length * 2, true);
 

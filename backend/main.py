@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File , UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+import numpy as np
 import shutil
 import os 
 import uuid
@@ -45,6 +46,24 @@ app.add_middleware(
 def home():
     return {"message": "Backend is running 🚀"}
 
+#------------train---------------
+@app.post("/train/")
+async def retrain_model():
+
+    try:
+        train_model()
+
+        # Load the newly trained model
+        load_model()
+
+        return {
+            "message": "Model retrained successfully!"
+        }
+
+    except ValueError as e:
+        return {
+            "error": str(e)
+        }
 #------------Register------------
 @app.post("/register/")
 async def register(user: str, file: UploadFile = File(...)):
@@ -69,37 +88,59 @@ async def login(file: UploadFile = File(...)):
     #safety check
     if model is None or scaler is None:
         return {"error": "Model not loaded"}
-    temp_path = os.path.join(BASE_DIR, "temp.wav")
+    temp_path = os.path.join(BASE_DIR,f"temp_{uuid.uuid4().hex}.wav")
 
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
 
-    # Extract MFCC
-    mfcc = extract_mfcc(temp_path)
-    mfcc_scaled = scaler.transform([mfcc])
+    try:
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
-    # Predict
-    prediction = model.predict(mfcc_scaled)[0]
-    confidence = max(model.predict_proba(mfcc_scaled)[0]) * 100
+        # Extract MFCC
+        mfcc = extract_mfcc(temp_path)
+        mfcc_scaled = scaler.transform([mfcc])
 
-    print("Prediction:", prediction)
-    print("Confidence:", confidence)
+        # Predict speaker
+        prediction = model.predict(mfcc_scaled)[0]
 
-    # Cleanup temp file
-    os.remove(temp_path)
+        # Get probabilities
+        probabilities = model.predict_proba(mfcc_scaled)[0]
 
-    # Reject logic
-    if confidence < 70:
+        # Sort probabilities
+        sorted_probs = np.sort(probabilities)[::-1]
+
+        # Highest probability
+        confidence = sorted_probs[0] * 100
+
+        # Difference between top two probabilities
+        if len(sorted_probs) > 1:
+            margin = (sorted_probs[0] - sorted_probs[1]) * 100
+        else:
+            margin = 0
+
+
+        print("Prediction:", prediction)
+        print("Confidence:", confidence)
+        print("Margin:", margin)
+
+        # Cleanup temp file
+        os.remove(temp_path)
+
+        # Reject logic
+        if confidence < 70:
+            return {
+                "status": "REJECTED",
+                "confidence": round(confidence, 2)
+            }
+
         return {
-            "status": "REJECTED",
-            "confidence": round(confidence, 2)
+            "status": "AUTHENTICATED",
+            "user": prediction,
+            "confidence": round(confidence, 2),
+            "margin": round(margin, 2)
         }
-
-    return {
-        "status": "AUTHENTICATED",
-        "user": prediction,
-        "confidence": round(confidence, 2),
-        
-    }
+    finally:
+        # Ensure temp file is removed even if an error occurs
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 

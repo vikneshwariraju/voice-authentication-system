@@ -7,9 +7,10 @@ from sklearn.preprocessing import StandardScaler
 
 def train_model():
     X = []
-    y = []
+    Y = []
 
-    data_path = "data"
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(BASE_DIR, "data")
 
     for user in os.listdir(data_path):
         user_folder = os.path.join(data_path, user)
@@ -23,10 +24,16 @@ def train_model():
             mfcc = extract_mfcc(file_path)
 
             X.append(mfcc)
-            y.append(user)
+            Y.append(user)
+
+    if len(set(Y)) < 2:
+        raise ValueError("At least two registered users are required.")
+
+    if len(X) == 0:
+        raise ValueError("No training audio found.")
 
     X = np.array(X)
-    Y=np.array(y)
+    Y = np.array(Y)
     print("Training data shape:", X.shape)
 
 # 🔥 Normalize data (VERY IMPORTANT)
@@ -35,13 +42,13 @@ def train_model():
 
 # 🔥 Train SVM
     model = SVC(kernel='rbf', probability=True)
-    model.fit(X_scaled, y)
+    model.fit(X_scaled, Y)
 
  # Save model + scaler
-    with open("model.pkl", "wb") as f:
+    with open(os.path.join(BASE_DIR, "model.pkl"), "wb") as f:
         pickle.dump(model, f)
 
-    with open("scaler.pkl", "wb") as f:
+    with open(os.path.join(BASE_DIR, "scaler.pkl"), "wb") as f:
         pickle.dump(scaler, f)
 
     print("✅ SVM Model trained & saved!")

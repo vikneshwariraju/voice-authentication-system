@@ -5,11 +5,14 @@ def extract_mfcc(file_path):
     # Load audio
     y, sr = librosa.load(file_path, sr=16000)
 
+
+    # Fix length (1 second)
+    y = librosa.util.fix_length(y, size=16000)
+
+    
     # Extract MFCC features
     mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
     
-     # Fix length (1 second)
-    y = librosa.util.fix_length(y, size=16000)
 
     # Delta (velocity)
     delta = librosa.feature.delta(mfcc)
